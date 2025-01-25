@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>박현일의 타이머</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #timer {
+            font-size: 48px;
+            margin: 20px;
+        }
+
+        .progress-ring {
+            position: relative;
+            width: 150px;
+            height: 150px;
+            margin: 20px auto;
+        }
+
+        .progress-ring circle {
+            fill: transparent;
+            stroke-width: 10;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            transition: stroke-dashoffset 0.3s;
+        }
+
+        .progress-ring .background {
+            stroke: #e6e6e6;
+        }
+
+        .progress-ring .progress {
+            stroke: #3498db;
+            stroke-linecap: round;
+        }
+
+        button {
+            font-size: 16px;
+            margin: 5px;
+            padding: 10px 20px;
+            cursor: pointer;
+        }
+
+        input {
+            font-size: 16px;
+            padding: 5px;
+            width: 80px;
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <h1>박현일의 타이머</h1>
+    <div>
+        <label for="minutes">Minutes:</label>
+        <input type="number" id="minutes" min="0" placeholder="0">
+        <label for="seconds">Seconds:</label>
+        <input type="number" id="seconds" min="0" max="59" placeholder="0">
+    </div>
+    <button id="start">Start</button>
+    <button id="stop">Stop</button>
+    <button id="reset">Reset</button>
+
+    <div class="progress-ring">
+        <svg width="150" height="150">
+            <circle class="background" cx="75" cy="75" r="70"></circle>
+            <circle class="progress" cx="75" cy="75" r="70" stroke-dasharray="440" stroke-dashoffset="440"></circle>
+        </svg>
+    </div>
+    <div id="timer">00:00</div>
+
+    <script>
+        let timerInterval;
+        let totalTime = 0;
+        let isPaused = false;
+        let currentTotalTime = 0;
+
+        const timerDisplay = document.getElementById('timer');
+        const startButton = document.getElementById('start');
+        const stopButton = document.getElementById('stop');
+        const resetButton = document.getElementById('reset');
+        const progressCircle = document.querySelector('.progress-ring .progress');
+        const circumference = 2 * Math.PI * 70;
+
+        progressCircle.style.strokeDasharray = `${circumference}`;
+        progressCircle.style.strokeDashoffset = `${circumference}`;
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }
+
+        function updateDisplay() {
+            timerDisplay.textContent = formatTime(totalTime);
+        }
+
+        function updateProgress() {
+            const offset = circumference - (totalTime / currentTotalTime) * circumference;
+            progressCircle.style.strokeDashoffset = offset;
+        }
+
+        startButton.addEventListener('click', () => {
+            if (isPaused) {
+                isPaused = false;
+            } else {
+                const minutesInput = parseInt(document.getElementById('minutes').value) || 0;
+                const secondsInput = parseInt(document.getElementById('seconds').value) || 0;
+                totalTime = minutesInput * 60 + secondsInput;
+                currentTotalTime = totalTime;
+            }
+
+            if (timerInterval) clearInterval(timerInterval);
+
+            timerInterval = setInterval(() => {
+                if (totalTime > 0) {
+                    totalTime--;
+                    updateDisplay();
+                    updateProgress();
+                } else {
+                    clearInterval(timerInterval);
+                    alert('Time is up!');
+                }
+            }, 1000);
+
+            updateDisplay();
+            updateProgress();
+        });
+
+        stopButton.addEventListener('click', () => {
+            if (timerInterval) clearInterval(timerInterval);
+            isPaused = true;
+        });
+
+        resetButton.addEventListener('click', () => {
+            if (timerInterval) clearInterval(timerInterval);
+            totalTime = 0;
+            isPaused = false;
+            currentTotalTime = 0;
+            updateDisplay();
+            progressCircle.style.strokeDashoffset = `${circumference}`;
+        });
+
+        updateDisplay();
+    </script>
+</body>
+</html>
